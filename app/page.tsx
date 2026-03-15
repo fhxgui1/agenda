@@ -9,7 +9,7 @@ import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import Link from 'next/link';
 
-import { dbService } from "@/lib/services/dbService";
+import { fetchEvents } from "@/lib/actions/eventActions";
 import { Task } from "@/lib/services/types";
 
 // --- Utilities --- //
@@ -278,7 +278,7 @@ export default function SchedulerHome() {
   useEffect(() => {
     setIsMounted(true);
     setSelectedDate(new Date());
-    dbService.getEvents().then(setTasks);
+    fetchEvents().then(setTasks);
   }, []);
 
   // Desktop view constants

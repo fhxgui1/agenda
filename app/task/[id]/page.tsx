@@ -1,10 +1,12 @@
 "use client";
 
-import { use, useEffect } from "react";
+import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Calendar as CalendarIcon, Clock, MapPin, AlignLeft, CheckCircle2, MoreVertical, Edit2 } from "lucide-react";
+import { ChevronLeft, Calendar as CalendarIcon, Clock, MapPin, AlignLeft, CheckCircle2, MoreVertical, Edit2, Loader2, AlertCircle } from "lucide-react";
 import { format, addHours, setHours, setMinutes } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { fetchEventById } from "@/lib/actions/eventActions";
+import { Task } from "@/lib/services/types";
 
 // Helper for type
 export default function TaskPage({ params }: { params: Promise<{ id: string }> }) {
@@ -12,23 +14,43 @@ export default function TaskPage({ params }: { params: Promise<{ id: string }> }
   const unwrappedParams = use(params);
   const id = unwrappedParams.id;
 
-  // Mock task for details page
-  const task = {
-    id,
-    title: "Reunião de Alinhamento e Pautas",
-    description: "Discussão aprofundada sobre as pautas do projeto e próximos passos do desenvolvimento da interface mobile. É importante todos estarem alinhados para não haver retrabalho.",
-    start: setHours(setMinutes(new Date(), 30), 10),
-    end: addHours(setHours(setMinutes(new Date(), 30), 10), 2),
-    status: "Confirmado",
-    location: "Google Meet",
-    participants: ["João Silva", "Maria Oliveira", "Carlos Souza"],
-    steps: [
-      { id: 1, text: "Preparar a apresentação base", done: true },
-      { id: 2, text: "Avisar os membros chave no Slack", done: true },
-      { id: 3, text: "Revisar as métricas da última semana", done: false },
-      { id: 4, text: "Anotar o feedback e agendar next steps", done: false },
-    ]
-  };
+  const [task, setTask] = useState<Task | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (id) {
+      setLoading(true);
+      fetchEventById(id)
+        .then(data => {
+          setTask(data);
+        })
+        .catch(err => {
+          console.error("Failed to load task:", err);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="w-full min-h-screen bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+      </div>
+    );
+  }
+
+  if (!task) {
+    return (
+      <div className="w-full min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col items-center justify-center text-center p-6">
+        <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
+        <h1 className="text-2xl font-bold mb-2">Evento não encontrado</h1>
+        <p className="text-neutral-500 mb-6">Aquele evento pode ter sido removido ou não existe.</p>
+        <button onClick={() => router.push('/')} className="bg-indigo-500 text-white px-6 py-3 rounded-xl font-medium shadow-md">Voltar ao Início</button>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col items-center">

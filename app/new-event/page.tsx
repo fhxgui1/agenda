@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Save, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { createEvent } from "@/lib/actions/eventActions";
 
 // Make sure to define cn if not imported correctly, or manually apply classes
 function twMerge(...classes: string[]) {
@@ -44,6 +45,50 @@ export default function NewEventPage() {
 
   const eventTypes: EventType[] = ["Tarefa", "Compromisso", "Projeto", "Rotina", "Atividade"];
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    let startD = new Date();
+    let endD = new Date();
+
+    if (eventType === "Projeto") {
+      if (startDate) startD = new Date(startDate);
+      if (endDate) endD = new Date(endDate);
+    } else {
+      if (date && time) {
+        startD = new Date(`${date}T${time}:00`);
+        endD = new Date(startD);
+        endD.setHours(endD.getHours() + 1);
+      }
+    }
+
+    try {
+      const typeMapping: any = {
+        'Tarefa': 'Trabalho',
+        'Compromisso': 'Trabalho',
+        'Projeto': 'Projetos',
+        'Rotina': 'Pessoal',
+        'Atividade': 'Pessoal'
+      };
+
+      await createEvent({
+        title,
+        description: description + (objective ? `\n\nObjetivo: ${objective}` : ""),
+        start: startD,
+        end: endD,
+        color: 'bg-blue-100 border-blue-200 text-blue-700',
+        priority: 'Média',
+        type: typeMapping[eventType] || 'Pessoal',
+        eventType,
+      });
+
+      router.push('/');
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao criar evento');
+    }
+  };
+
   return (
     <div className="w-full min-h-screen bg-neutral-50 dark:bg-neutral-950 flex flex-col">
        {/* Header */}
@@ -73,7 +118,7 @@ export default function NewEventPage() {
            </div>
          </div>
 
-         <form className="space-y-6 max-w-2xl mx-auto w-full" onSubmit={(e) => { e.preventDefault(); router.push('/'); }}>
+         <form className="space-y-6 max-w-2xl mx-auto w-full" onSubmit={handleSubmit}>
             {/* Common Fields: Title & Description */}
             <div className="space-y-4">
               <div>

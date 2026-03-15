@@ -27,6 +27,7 @@ class DatabaseService {
       type: row.category as any, 
       status: row.status,
       location: row.location,
+      eventType: row.event_type,
       steps: [] 
     }));
   }
@@ -47,6 +48,7 @@ class DatabaseService {
       type: row.category as any,
       status: row.status,
       location: row.location,
+      eventType: row.event_type,
       steps: []
     };
   }
@@ -58,7 +60,7 @@ class DatabaseService {
       ) VALUES (
         ${newTask.title},
         ${newTask.description || null},
-        ${'Tarefa'},
+        ${newTask.eventType || 'Tarefa'},
         ${newTask.start},
         ${newTask.end},
         ${newTask.priority || 'Média'},
@@ -81,6 +83,7 @@ class DatabaseService {
       type: row.category as any,
       status: row.status,
       location: row.location,
+      eventType: row.event_type,
       steps: []
     };
   }

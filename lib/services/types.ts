@@ -11,5 +11,6 @@ export type Task = {
   // Optional / Specific fields derived from event_type differences
   status?: string;
   location?: string;
+  eventType?: string;
   steps?: { id: number, text: string, done: boolean }[];
 };
