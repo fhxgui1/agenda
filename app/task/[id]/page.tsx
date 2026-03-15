@@ -126,7 +126,7 @@ export default function TaskPage({ params }: { params: Promise<{ id: string }> }
             </h3>
 
             <div className="space-y-4">
-               {task.steps.map(step => (
+               {task.steps?.map(step => (
                  <label key={step.id} className="flex flex-row items-center justify-between p-4 rounded-2xl border border-neutral-200 dark:border-neutral-800 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors group">
                    <div className="flex items-center gap-4">
                      <div className="relative flex items-center justify-center overflow-hidden">
