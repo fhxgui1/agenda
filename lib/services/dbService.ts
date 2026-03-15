@@ -14,7 +14,19 @@ class DatabaseService {
   // --- MICROSERVICE QUERIES/MUTATIONS --- //
   
   async getEvents(): Promise<Task[]> {
-    const rows = await this.sql`SELECT * FROM events`;
+    const rows = await this.sql`
+      SELECT 
+        e.*,
+        COALESCE(
+          json_agg(
+            json_build_object('id', s.id, 'text', s.text, 'done', s.is_completed) ORDER BY s.step_order
+          ) FILTER (WHERE s.id IS NOT NULL), 
+          '[]'
+        ) AS steps
+      FROM events e
+      LEFT JOIN event_steps s ON e.id = s.event_id
+      GROUP BY e.id
+    `;
     
     return rows.map(row => ({
       id: row.id,
@@ -28,12 +40,25 @@ class DatabaseService {
       status: row.status,
       location: row.location,
       eventType: row.event_type,
-      steps: [] 
+      steps: row.steps 
     }));
   }
 
   async getEventById(id: string): Promise<Task | null> {
-    const rows = await this.sql`SELECT * FROM events WHERE id = ${id}`;
+    const rows = await this.sql`
+      SELECT 
+        e.*,
+        COALESCE(
+          json_agg(
+            json_build_object('id', s.id, 'text', s.text, 'done', s.is_completed) ORDER BY s.step_order
+          ) FILTER (WHERE s.id IS NOT NULL), 
+          '[]'
+        ) AS steps
+      FROM events e
+      LEFT JOIN event_steps s ON e.id = s.event_id
+      WHERE e.id = ${id}
+      GROUP BY e.id
+    `;
     if (rows.length === 0) return null;
     
     const row = rows[0];
@@ -49,7 +74,7 @@ class DatabaseService {
       status: row.status,
       location: row.location,
       eventType: row.event_type,
-      steps: []
+      steps: row.steps
     };
   }
 
@@ -72,6 +97,29 @@ class DatabaseService {
     `;
     
     const row = rows[0];
+    const insertedSteps = [];
+
+    if (newTask.steps && newTask.steps.length > 0) {
+      for (let i = 0; i < newTask.steps.length; i++) {
+        const step = newTask.steps[i];
+        if (step.text.trim() === '') continue; // Skip empty steps
+        
+        const stepRows = await this.sql`
+          INSERT INTO event_steps (event_id, text, step_order, is_completed)
+          VALUES (${row.id}, ${step.text}, ${i}, ${step.done || false})
+          RETURNING *
+        `;
+        
+        if (stepRows.length > 0) {
+           insertedSteps.push({
+             id: stepRows[0].id,
+             text: stepRows[0].text,
+             done: stepRows[0].is_completed
+           });
+        }
+      }
+    }
+
     return {
       id: row.id,
       title: row.title,
@@ -84,8 +132,18 @@ class DatabaseService {
       status: row.status,
       location: row.location,
       eventType: row.event_type,
-      steps: []
+      steps: insertedSteps
     };
+  }
+
+  // Completes a task/event
+  async updateEventStatus(id: string, status: string): Promise<void> {
+    await this.sql`UPDATE events SET status = ${status} WHERE id = ${id}`;
+  }
+
+  // Toggles step completion
+  async toggleStep(id: string | number, done: boolean): Promise<void> {
+    await this.sql`UPDATE event_steps SET is_completed = ${done} WHERE id = ${id}`;
   }
 }
 

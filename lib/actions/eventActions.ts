@@ -14,3 +14,11 @@ export async function fetchEventById(id: string): Promise<Task | null> {
 export async function createEvent(newTask: Omit<Task, "id">): Promise<Task> {
   return await dbService.insertEvent(newTask);
 }
+
+export async function updateEventStatus(id: string, status: string): Promise<void> {
+  return await dbService.updateEventStatus(id, status);
+}
+
+export async function toggleEventStep(stepId: string | number, done: boolean): Promise<void> {
+  return await dbService.toggleStep(stepId, done);
+}

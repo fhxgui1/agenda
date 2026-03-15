@@ -80,6 +80,7 @@ export default function NewEventPage() {
         priority: 'Média',
         type: typeMapping[eventType] || 'Pessoal',
         eventType,
+        steps: (eventType === 'Projeto' || eventType === 'Atividade') ? steps.filter(s => s.text.trim() !== "").map((s, index) => ({ id: index, text: s.text, done: false })) : [],
       });
 
       router.push('/');

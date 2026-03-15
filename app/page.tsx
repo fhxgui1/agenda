@@ -199,7 +199,7 @@ function MobileRightScreen({ selectedDate, tasks }: { selectedDate: Date, tasks:
 }
 
 // Task List Section (used in Mobile Right-most screen and Desktop alternative view)
-function TaskListSection({ tasks, selectedDate }: { tasks: Task[], selectedDate: Date }) {
+function TaskListSection({ tasks, selectedDate, showCompleted, setShowCompleted }: { tasks: Task[], selectedDate: Date, showCompleted: boolean, setShowCompleted: (val: boolean) => void }) {
   const [period, setPeriod] = useState('Hoje');
   const [priorityFilter, setPriorityFilter] = useState('Todas');
   const [typeFilter, setTypeFilter] = useState('Todos');
@@ -240,6 +240,12 @@ function TaskListSection({ tasks, selectedDate }: { tasks: Task[], selectedDate:
           </select>
         </div>
       </div>
+      <div className="mb-4">
+        <label className="flex items-center gap-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 cursor-pointer">
+          <input type="checkbox" checked={showCompleted} onChange={e => setShowCompleted(e.target.checked)} className="rounded text-blue-500 w-4 h-4" />
+          Mostrar eventos concluídos
+        </label>
+      </div>
 
       <div className="flex flex-col gap-3 pb-20 md:pb-0">
         {filteredTasks.length === 0 ? (
@@ -269,11 +275,16 @@ export default function SchedulerHome() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isMounted, setIsMounted] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [showCompleted, setShowCompleted] = useState(false);
   
   // Mobile dragging state container. Right is active initially.
   // We'll use Framer Motion for draggable screen container
   const [activeScreen, setActiveScreen] = useState<'left'|'center'|'right'>('center');
   const [desktopView, setDesktopView] = useState<'calendar'|'list'>('calendar');
+
+  const visibleTasks = useMemo(() => {
+    return tasks.filter(t => showCompleted || t.status !== 'Concluído');
+  }, [tasks, showCompleted]);
 
   useEffect(() => {
     setIsMounted(true);
@@ -342,7 +353,7 @@ export default function SchedulerHome() {
                {/* Columns */}
                {weekDays.map(day => (
                  <div key={day.toISOString()} className={cn("flex-1 border-l border-neutral-100 dark:border-neutral-800 relative z-10", isToday(day) && "bg-neutral-50/30 dark:bg-neutral-900/20")}>
-                   {tasks.filter(t => isSameDay(t.start, day)).map(task => {
+                   {visibleTasks.filter(t => isSameDay(t.start, day)).map(task => {
                      const startHour = task.start.getHours();
                      const durationHours = (task.end.getTime() - task.start.getTime()) / (1000 * 60 * 60);
                      if (startHour < hours[0] || startHour > hours[hours.length - 1]) return null;
@@ -411,12 +422,12 @@ export default function SchedulerHome() {
           <div className="w-screen h-full flex-shrink-0">
             <MobileRightScreen 
               selectedDate={selectedDate} 
-              tasks={tasks}
+              tasks={visibleTasks}
             />
           </div>
           {/* Right Screen: Task List */}
           <div className="w-screen h-full flex-shrink-0">
-             <TaskListSection tasks={tasks} selectedDate={selectedDate} />
+             <TaskListSection tasks={visibleTasks} selectedDate={selectedDate} showCompleted={showCompleted} setShowCompleted={setShowCompleted} />
           </div>
         </motion.div>
 
@@ -464,6 +475,10 @@ export default function SchedulerHome() {
           <div className="mt-4">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-4 px-2">Filtros Rápidos</h3>
             <div className="flex flex-col gap-2">
+              <label className="flex items-center gap-3 px-3 py-2 cursor-pointer text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200/50 dark:hover:bg-neutral-800 rounded-xl transition-colors">
+                 <input type="checkbox" checked={showCompleted} onChange={e => setShowCompleted(e.target.checked)} className="rounded text-blue-500 w-4 h-4" />
+                 Mostrar Concluídos
+              </label>
               {['Trabalho', 'Pessoal', 'Projetos'].map(filter => (
                  <button key={filter} className="flex items-center gap-3 w-full text-left px-3 py-2.5 rounded-xl hover:bg-neutral-200/50 dark:hover:bg-neutral-800 transition-colors text-neutral-700 dark:text-neutral-300 font-medium whitespace-nowrap overflow-hidden text-ellipsis">
                    <div className="w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0" />
@@ -477,7 +492,7 @@ export default function SchedulerHome() {
         {/* Main Dashboard Area */}
         {desktopView === 'calendar' ? <DesktopWeekView /> : (
            <div className="flex-1 flex flex-col h-full bg-white dark:bg-neutral-950 rounded-l-3xl shadow-2xl border-l border-neutral-200 dark:border-neutral-800 overflow-hidden relative">
-              <TaskListSection tasks={tasks} selectedDate={selectedDate} />
+              <TaskListSection tasks={visibleTasks} selectedDate={selectedDate} showCompleted={showCompleted} setShowCompleted={setShowCompleted} />
            </div>
         )}
       </div>

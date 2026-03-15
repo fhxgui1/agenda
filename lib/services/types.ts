@@ -12,5 +12,5 @@ export type Task = {
   status?: string;
   location?: string;
   eventType?: string;
-  steps?: { id: number, text: string, done: boolean }[];
+  steps?: { id: string | number, text: string, done: boolean }[];
 };

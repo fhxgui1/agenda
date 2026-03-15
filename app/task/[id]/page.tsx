@@ -2,10 +2,10 @@
 
 import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Calendar as CalendarIcon, Clock, MapPin, AlignLeft, CheckCircle2, MoreVertical, Edit2, Loader2, AlertCircle } from "lucide-react";
-import { format, addHours, setHours, setMinutes } from "date-fns";
+import { ChevronLeft, Calendar as CalendarIcon, Clock, MapPin, AlignLeft, CheckCircle2, MoreVertical, Edit2, Loader2, AlertCircle, Check } from "lucide-react";
+import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { fetchEventById } from "@/lib/actions/eventActions";
+import { fetchEventById, updateEventStatus, toggleEventStep } from "@/lib/actions/eventActions";
 import { Task } from "@/lib/services/types";
 
 // Helper for type
@@ -32,6 +32,32 @@ export default function TaskPage({ params }: { params: Promise<{ id: string }> }
         });
     }
   }, [id]);
+
+  const handleToggleStep = async (stepId: string | number, currentDone: boolean) => {
+    if (!task) return;
+    try {
+      const newDone = !currentDone;
+      // Optimistic update
+      setTask({
+        ...task,
+        steps: task.steps?.map(s => s.id === stepId ? { ...s, done: newDone } : s)
+      });
+      await toggleEventStep(stepId, newDone);
+    } catch (e) {
+      console.error("Failed to toggle step:", e);
+    }
+  };
+
+  const handleCompleteTask = async () => {
+    if (!task) return;
+    try {
+      const newStatus = task.status === 'Concluído' ? 'Pendente' : 'Concluído';
+      setTask({ ...task, status: newStatus });
+      await updateEventStatus(task.id, newStatus);
+    } catch (e) {
+      console.error("Failed to update status:", e);
+    }
+  };
 
   if (loading) {
     return (
@@ -63,9 +89,15 @@ export default function TaskPage({ params }: { params: Promise<{ id: string }> }
            <button onClick={() => router.back()} className="p-2 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full transition-colors w-10 h-10 flex items-center justify-center">
              <ChevronLeft className="w-6 h-6" />
            </button>
-           <button className="p-2 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full transition-colors w-10 h-10 flex items-center justify-center">
-             <Edit2 className="w-5 h-5" />
-           </button>
+           <div className="flex gap-2">
+             <button onClick={handleCompleteTask} className={`px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full transition-colors font-medium flex items-center gap-2 ${task.status === 'Concluído' ? 'text-green-300' : 'text-white'}`}>
+               <Check className="w-5 h-5" />
+               {task.status === 'Concluído' ? 'Concluído' : 'Completar'}
+             </button>
+             <button className="p-2 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full transition-colors w-10 h-10 flex items-center justify-center">
+               <Edit2 className="w-5 h-5" />
+             </button>
+           </div>
          </div>
 
          {/* Main Card */}
@@ -132,8 +164,9 @@ export default function TaskPage({ params }: { params: Promise<{ id: string }> }
                      <div className="relative flex items-center justify-center overflow-hidden">
                        <input 
                          type="checkbox" 
-                         defaultChecked={step.done} 
-                         className="peer appearance-none w-6 h-6 border-2 border-neutral-300 dark:border-neutral-700 rounded-md checked:bg-indigo-500 checked:border-indigo-500 transition-colors"
+                         checked={step.done}
+                         onChange={() => handleToggleStep(step.id, step.done)}
+                         className="peer appearance-none w-6 h-6 border-2 border-neutral-300 dark:border-neutral-700 rounded-md checked:bg-indigo-500 checked:border-indigo-500 transition-colors cursor-pointer"
                        />
                        <CheckCircle2 className="w-4 h-4 text-white absolute opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none" />
                      </div>
