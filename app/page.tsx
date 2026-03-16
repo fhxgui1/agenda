@@ -101,9 +101,9 @@ function Calendar({
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
-        <h2 className="text-lg font-semibold text-neutral-800 capitalize dark:text-neutral-100">
+        <h3 className="text-lg font-semibold text-neutral-800 capitalize dark:text-neutral-100">
           {format(currentMonth, dateFormat, { locale: ptBR })}
-        </h2>
+        </h3>
         <button
           onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
           className="rounded-full p-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
