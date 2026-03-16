@@ -135,7 +135,6 @@ class DatabaseService {
       steps: insertedSteps
     };
   }
-
   // Completes a task/event
   async updateEventStatus(id: string, status: string): Promise<void> {
     await this.sql`UPDATE events SET status = ${status} WHERE id = ${id}`;
@@ -146,6 +145,5 @@ class DatabaseService {
     await this.sql`UPDATE event_steps SET is_completed = ${done} WHERE id = ${id}`;
   }
 }
-
 // Export singleton instance representing our Data Access Layer
 export const dbService = new DatabaseService();

@@ -8,7 +8,6 @@ import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Filter, Clock, Map
 import clsx from "clsx";
 import { twMerge } from "tailwind-merge";
 import Link from 'next/link';
-
 import { fetchEvents } from "@/lib/actions/eventActions";
 import { Task } from "@/lib/services/types";
 
@@ -19,7 +18,8 @@ function cn(...inputs: (string | undefined | null | false)[]) {
 
 // --- Components --- //
 
-// Calendar Component
+// Calendar Component. 
+
 function Calendar({ selectedDate, onSelect, className }: { selectedDate: Date, onSelect: (d: Date) => void, className?: string }) {
   const [currentMonth, setCurrentMonth] = useState(startOfMonth(selectedDate));
   
@@ -137,9 +137,20 @@ function MobileLeftScreen({ selectedDate, setSelectedDate, toggleView }: { selec
 
 // Mobile Right Screen (Timeline)
 function MobileRightScreen({ selectedDate, tasks }: { selectedDate: Date, tasks: Task[] }) {
-  // Hours from 6 AM to 10 PM
-  const hours = Array.from({ length: 17 }, (_, i) => i + 6);
+  // Hours from 00:00 to 23:00
+  const hours = Array.from({ length: 24 }, (_, i) => i);
   const dayTasks = tasks.filter(t => isSameDay(t.start, selectedDate));
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      const currentHour = new Date().getHours();
+      // Scroll slightly before the current hour (e.g., each hour is approx 90px tall)
+      // minus 45px for a centered feel, making sure we don't go negative
+      const targetScroll = Math.max(0, (currentHour * 90) - 45);
+      scrollRef.current.scrollTop = targetScroll;
+    }
+  }, [selectedDate]);
 
   return (
     <div className="w-full h-full flex flex-col bg-[#0a0a0a] text-white overflow-hidden relative">
@@ -150,7 +161,7 @@ function MobileRightScreen({ selectedDate, tasks }: { selectedDate: Date, tasks:
         <p className="text-neutral-400 text-lg font-medium">{format(selectedDate, "d 'de' MMMM", { locale: ptBR })}</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto relative w-full pb-20">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto relative w-full pb-20 scroll-smooth">
         <div className="flex flex-col relative w-full mt-2">
           {hours.map(hour => {
             const hourTasks = dayTasks.filter(t => t.start.getHours() === hour);
@@ -297,7 +308,17 @@ export default function SchedulerHome() {
     // Generate week days
     const weekStart = startOfWeek(selectedDate);
     const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-    const hours = Array.from({ length: 15 }, (_, i) => i + 7);
+    const hours = Array.from({ length: 24 }, (_, i) => i);
+    const scrollRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      if (scrollRef.current) {
+        const currentHour = new Date().getHours();
+        // Each hour block is 96px tall, subtract some offset to center it nicely
+        const targetScroll = Math.max(0, (currentHour * 96) - 50);
+        scrollRef.current.scrollTop = targetScroll;
+      }
+    }, []);
 
     return (
       <div className="flex-1 flex flex-col h-full bg-white dark:bg-neutral-950 rounded-l-3xl shadow-2xl border-l border-neutral-200 dark:border-neutral-800 overflow-hidden">
@@ -336,10 +357,10 @@ export default function SchedulerHome() {
           </div>
           
           {/* Grid Body */}
-          <div className="flex-1 overflow-y-auto relative w-full flex">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto relative w-full flex scroll-smooth">
              <div className="w-16 flex-shrink-0 relative border-r border-neutral-200 dark:border-neutral-800 bg-neutral-50/30 dark:bg-neutral-900/10">
                {hours.map((hour, idx) => (
-                 <span key={hour} className="text-xs font-medium text-neutral-400 -translate-y-1/2 absolute right-2 block" style={{ top: `${idx * 96}px` }}>{hour}:00</span>
+                 <span key={hour} className="text-xs font-medium text-neutral-400 -translate-y-1/2 absolute right-2 block" style={{ top: `${idx * 96}px` }}>{hour.toString().padStart(2, '0')}:00</span>
                ))}
                <div style={{ height: `${hours.length * 96}px` }} />
              </div>
