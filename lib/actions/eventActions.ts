@@ -22,3 +22,11 @@ export async function updateEventStatus(id: string, status: string): Promise<voi
 export async function toggleEventStep(stepId: string | number, done: boolean): Promise<void> {
   return await dbService.toggleStep(stepId, done);
 }
+
+export async function fetchActivityTypes() {
+  return await dbService.getActivityTypes();
+}
+
+export async function addActivityType(name: string, colorTheme?: string) {
+  return await dbService.addActivityType(name, colorTheme);
+}
