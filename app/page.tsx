@@ -16,6 +16,16 @@ function cn(...inputs: (string | undefined | null | false)[]) {
   return twMerge(clsx(inputs));
 }
 
+function useCurrentTime() {
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    setNow(new Date());
+    const interval = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(interval);
+  }, []);
+  return now;
+}
+
 // --- Components --- //
 
 // Calendar Component. 
@@ -137,6 +147,7 @@ function MobileLeftScreen({ selectedDate, setSelectedDate, toggleView }: { selec
 
 // Mobile Right Screen (Timeline)
 function MobileRightScreen({ selectedDate, tasks }: { selectedDate: Date, tasks: Task[] }) {
+  const now = useCurrentTime();
   // Hours from 00:00 to 23:00
   const hours = Array.from({ length: 24 }, (_, i) => i);
   const dayTasks = tasks.filter(t => isSameDay(t.start, selectedDate));
@@ -165,11 +176,24 @@ function MobileRightScreen({ selectedDate, tasks }: { selectedDate: Date, tasks:
         <div className="flex flex-col relative w-full mt-2">
           {hours.map(hour => {
             const hourTasks = dayTasks.filter(t => t.start.getHours() === hour);
+            const isCurrentHour = isSameDay(selectedDate, now) && now.getHours() === hour;
+            const currentMinuteOffset = isCurrentHour ? (now.getMinutes() / 60) * 90 : 0;
+
             return (
               <div key={hour} className="relative min-h-[90px] w-full flex group">
                 {/* Timeline Grid Line */}
                 <div className="absolute top-[18px] right-0 left-20 h-[1px] bg-neutral-800/60" />
                 
+                {/* Current Time Line */}
+                {isCurrentHour && (
+                  <div 
+                    className="absolute left-20 right-0 h-[2px] bg-red-500 z-30 pointer-events-none"
+                    style={{ top: `${18 + currentMinuteOffset}px` }}
+                  >
+                    <div className="absolute -left-1.5 -top-[5px] w-3 h-3 bg-red-500 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
+                  </div>
+                )}
+
                 {/* Hour Label */}
                 <div className="w-20 flex-shrink-0 pt-[12px] pl-5 z-10">
                   {hourTasks.length === 0 && (
@@ -305,6 +329,7 @@ export default function SchedulerHome() {
 
   // Desktop view constants
   const DesktopWeekView = () => {
+    const now = useCurrentTime();
     // Generate week days
     const weekStart = startOfWeek(selectedDate);
     const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
@@ -362,6 +387,16 @@ export default function SchedulerHome() {
                {hours.map((hour, idx) => (
                  <span key={hour} className="text-xs font-medium text-neutral-400 -translate-y-1/2 absolute right-2 block" style={{ top: `${idx * 96}px` }}>{hour.toString().padStart(2, '0')}:00</span>
                ))}
+               
+               {/* Time axis current time */}
+               {weekDays.some(day => isSameDay(day, now)) && (
+                 <span 
+                   className="text-[10px] font-bold text-white bg-red-500 rounded-full px-1.5 py-0.5 -translate-y-1/2 absolute right-1 block z-20 shadow-sm transition-all"
+                   style={{ top: `${(now.getHours() * 96) + (now.getMinutes() / 60) * 96}px` }}
+                 >
+                   {format(now, 'HH:mm')}
+                 </span>
+               )}
                <div style={{ height: `${hours.length * 96}px` }} />
              </div>
              <div className="flex-1 flex pl-px relative">
@@ -374,6 +409,16 @@ export default function SchedulerHome() {
                {/* Columns */}
                {weekDays.map(day => (
                  <div key={day.toISOString()} className={cn("flex-1 border-l border-neutral-100 dark:border-neutral-800 relative z-10", isToday(day) && "bg-neutral-50/30 dark:bg-neutral-900/20")}>
+                   {/* Current Time Line */}
+                   {isSameDay(day, now) && (
+                     <div 
+                       className="absolute left-0 right-0 h-[2px] bg-red-500 z-50 pointer-events-none"
+                       style={{ top: `${(now.getHours() * 96) + (now.getMinutes() / 60) * 96}px` }}
+                     >
+                       <div className="absolute -left-[5px] -top-[5px] w-3 h-3 bg-red-500 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
+                     </div>
+                   )}
+
                    {visibleTasks.filter(t => isSameDay(t.start, day)).map(task => {
                      const startHour = task.start.getHours();
                      const durationHours = (task.end.getTime() - task.start.getTime()) / (1000 * 60 * 60);
