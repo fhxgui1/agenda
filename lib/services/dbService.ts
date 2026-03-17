@@ -117,6 +117,20 @@ class DatabaseService {
     }
   }
 
+  async getProjectsAndActivities(): Promise<{ id: string; title: string; eventType: string }[]> {
+    const rows = await this.sql`
+      SELECT id, title, event_type
+      FROM events
+      WHERE event_type IN ('Projeto', 'Atividade')
+      ORDER BY title ASC
+    `
+    return rows.map((row) => ({
+      id: row.id,
+      title: row.title,
+      eventType: row.event_type,
+    }))
+  }
+
   async insertEvent(newTask: Omit<Task, "id">): Promise<Task> {
     const rows = await this.sql`
       INSERT INTO events (

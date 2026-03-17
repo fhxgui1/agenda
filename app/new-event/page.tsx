@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { ChevronLeft, Save, Plus, X } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { createEvent, fetchActivityTypes } from "@/lib/actions/eventActions"
+import { createEvent, fetchActivityTypes, fetchProjectsAndActivities } from "@/lib/actions/eventActions"
 import { ActivityType } from "@/lib/services/types"
 
 // Make sure to define cn if not imported correctly, or manually apply classes
@@ -29,12 +29,15 @@ export default function NewEventPage() {
   const [activityTypes, setActivityTypes] = useState<ActivityType[]>([])
   const [selectedActivityTypeId, setSelectedActivityTypeId] =
     useState<string>("")
+  const [parents, setParents] = useState<{ id: string; title: string; eventType: string }[]>([])
+  const [selectedProjectId, setSelectedProjectId] = useState<string>("")
 
   useEffect(() => {
     fetchActivityTypes().then((data) => {
       setActivityTypes(data)
       if (data.length > 0) setSelectedActivityTypeId(data[0].id)
     })
+    fetchProjectsAndActivities().then(setParents)
   }, [])
 
   const addStep = () => {
@@ -115,6 +118,7 @@ export default function NewEventPage() {
         eventType,
         hasTime,
         activityTypeId: selectedActivityTypeId || null,
+        projectId: selectedProjectId || null,
         steps:
           eventType === "Projeto" || eventType === "Atividade"
             ? steps
@@ -218,6 +222,27 @@ export default function NewEventPage() {
                 ))}
               </select>
             </div>
+
+            {/* Projetos/Atividades Dropdown */}
+            {["Tarefa", "Compromisso", "Rotina"].includes(eventType) && (
+              <div className="animate-in duration-300 fade-in slide-in-from-bottom-2">
+                <label className="mb-1 ml-1 block text-sm font-medium text-neutral-500">
+                  Vincular a (Projeto ou Atividade)
+                </label>
+                <select
+                  value={selectedProjectId}
+                  onChange={(e) => setSelectedProjectId(e.target.value)}
+                  className="w-full appearance-none rounded-2xl border border-neutral-200 bg-white px-5 py-4 text-base text-neutral-900 shadow-sm transition-all outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-neutral-800 dark:bg-neutral-900 dark:text-white"
+                >
+                  <option value="">Nenhum</option>
+                  {parents.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.eventType}: {p.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           {/* Projeto Specific Fields */}

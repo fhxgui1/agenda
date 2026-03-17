@@ -102,9 +102,9 @@ function Calendar({
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
-        <h2 className="text-lg font-semibold text-neutral-800 capitalize dark:text-neutral-100">
+        <h3 className="text-lg font-semibold text-neutral-800 capitalize dark:text-neutral-100">
           {format(currentMonth, dateFormat, { locale: ptBR })}
-        </h2>
+        </h3>
         <button
           onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
           className="rounded-full p-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
@@ -160,7 +160,7 @@ function Calendar({
   )
 }
 
-// Mobile Left Screen (Selection & Filters)
+
 function MobileLeftScreen({
   selectedDate,
   setSelectedDate,
@@ -186,8 +186,7 @@ function MobileLeftScreen({
         <Link
           href="/new-event"
           className="rounded-xl bg-neutral-900 px-4 py-2 text-sm font-bold text-white shadow-md transition-all hover:scale-105 active:scale-95 dark:bg-white dark:text-neutral-900"
-        >
-          + Novo
+        > + Novo
         </Link>
       </div>
 

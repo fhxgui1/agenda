@@ -27,6 +27,10 @@ export async function fetchActivityTypes() {
   return await dbService.getActivityTypes();
 }
 
+export async function fetchProjectsAndActivities() {
+  return await dbService.getProjectsAndActivities();
+}
+
 export async function addActivityType(name: string, colorTheme?: string) {
   return await dbService.addActivityType(name, colorTheme);
 }
