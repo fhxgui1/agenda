@@ -33,6 +33,7 @@ import {
   CalendarDays,
   X,
   Settings,
+  Plus,
 } from "lucide-react"
 import clsx from "clsx"
 import { twMerge } from "tailwind-merge"
@@ -184,7 +185,7 @@ function MobileLeftScreen({
         </h1>
         <Link
           href="/new-event"
-          className="hidden rounded-xl bg-neutral-900 px-4 py-2 text-sm font-bold text-white shadow-md transition-all hover:scale-105 active:scale-95 md:flex dark:bg-white dark:text-neutral-900"
+          className="rounded-xl bg-neutral-900 px-4 py-2 text-sm font-bold text-white shadow-md transition-all hover:scale-105 active:scale-95 dark:bg-white dark:text-neutral-900"
         >
           + Novo
         </Link>
@@ -694,16 +695,17 @@ export default function SchedulerHome() {
             right: 0,
           }}
           dragElastic={0.05}
+          dragDirectionLock={true}
           onDragEnd={(e, { offset, velocity }) => {
             const threshold =
-              (typeof window !== "undefined" ? window.innerWidth : 500) / 3
+              (typeof window !== "undefined" ? window.innerWidth : 500) / 4
             // Swiping right => moving left logically
-            if (offset.x > threshold || velocity.x > 500) {
+            if (offset.x > threshold || velocity.x > 300) {
               if (activeScreen === "right") setActiveScreen("center")
               else if (activeScreen === "center") setActiveScreen("left")
             }
             // Swiping left => moving right logically
-            else if (offset.x < -threshold || velocity.x < -500) {
+            else if (offset.x < -threshold || velocity.x < -300) {
               if (activeScreen === "left") setActiveScreen("center")
               else if (activeScreen === "center") setActiveScreen("right")
             }
@@ -771,6 +773,14 @@ export default function SchedulerHome() {
             )}
           />
         </div>
+        {/* Floating Action Button for Mobile globally */}
+        <Link
+          href="/new-event"
+          className="absolute bottom-20 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-[0_8px_30px_rgba(79,70,229,0.4)] transition-transform active:scale-90"
+        >
+          <Plus className="h-6 w-6" />
+        </Link>
+
       </div>
 
       {/* ---------- DESKTOP VIEW ---------- */}
