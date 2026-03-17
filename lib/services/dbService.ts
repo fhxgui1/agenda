@@ -122,6 +122,7 @@ class DatabaseService {
       SELECT id, title, event_type
       FROM events
       WHERE event_type IN ('Projeto', 'Atividade')
+      and status='Pendente'
       ORDER BY title ASC
     `
     return rows.map((row) => ({
