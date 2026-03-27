@@ -188,6 +188,7 @@ function MobileLeftScreen({
           className="rounded-xl bg-neutral-900 px-4 py-2 text-sm font-bold text-white shadow-md transition-all hover:scale-105 active:scale-95 dark:bg-white dark:text-neutral-900"
         > + Novo
         </Link>
+        
       </div>
 
       <div className="mb-6 space-y-2">
@@ -403,7 +404,8 @@ function TaskListSection({
             <option value="Média">Média</option>
             <option value="Baixa">Baixa</option>
           </select>
-          <select
+
+          {/* <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
             className="pointer-events-auto flex-1 appearance-none rounded-xl border border-neutral-200 bg-white p-3 text-sm font-medium text-neutral-900 outline-none dark:border-neutral-800 dark:bg-neutral-900 dark:text-white"
@@ -412,7 +414,9 @@ function TaskListSection({
             <option value="Trabalho">Trabalho</option>
             <option value="Pessoal">Pessoal</option>
             <option value="Projetos">Projetos</option>
-          </select>
+          </select> */}
+
+
         </div>
       </div>
       <div className="mb-4">

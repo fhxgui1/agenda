@@ -280,6 +280,7 @@ export default function NewEventPage() {
                     </div>
 
                     <div className="mt-2 flex w-full gap-2">
+                      ,
                       <input
                         type="text"
                         placeholder="Título da Etapa"

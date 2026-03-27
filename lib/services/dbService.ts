@@ -42,6 +42,7 @@ class DatabaseService {
 
   async getEvents(): Promise<Task[]> {
     const rows = await this.sql`
+
       SELECT 
         e.*,
         act.name as activity_type_name,
@@ -56,6 +57,7 @@ class DatabaseService {
       LEFT JOIN event_steps s ON e.id = s.event_id
       LEFT JOIN activity_types act ON e.activity_type_id = act.id
       GROUP BY e.id, act.id
+
     `
 
     return rows.map((row) => ({
@@ -119,6 +121,7 @@ class DatabaseService {
 
   async getProjectsAndActivities(): Promise<{ id: string; title: string; eventType: string }[]> {
     const rows = await this.sql`
+    
       SELECT id, title, event_type
       FROM events
       WHERE event_type IN ('Projeto', 'Atividade')
