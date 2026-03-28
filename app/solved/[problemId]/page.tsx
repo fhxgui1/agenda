@@ -35,7 +35,8 @@ export default function EditCreateProblemPage() {
   // Fetch logic
   useEffect(() => {
     if (!isNew && problemId) {
-      getProblemById(Number(problemId)).then(data => {
+      getProblemById(Number(problemId)).then((rawData: any) => {
+        const data = rawData;
         if (data) {
           setTitle(data.title);
           setDescription(data.description || "");
