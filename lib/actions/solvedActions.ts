@@ -26,7 +26,18 @@ export async function getProblemById(id: number) {
     SELECT * FROM problems 
     WHERE id = ${id} AND user_id = ${MOCK_USER_ID}
   `;
-  return rows.length ? { ...rows[0] } : null;
+  if (rows.length === 0) return null;
+
+  const problem = rows[0];
+
+  const reqs = await sql`
+    SELECT id, content, is_completed 
+    FROM problem_requirements
+    WHERE problem_id = ${id}
+    ORDER BY id ASC
+  `;
+
+  return { ...problem, requirements: reqs.map(r => ({ ...r })) };
 }
 
 export async function createProblem(data: {
@@ -37,6 +48,7 @@ export async function createProblem(data: {
   time_level: string;
   complexity: string;
   status?: string;
+  requirements?: { content: string; is_completed: boolean }[];
 }) {
   const sql = getSql();
   const status = data.status || "Aberto";
@@ -45,7 +57,19 @@ export async function createProblem(data: {
     VALUES (${MOCK_USER_ID}, ${data.title}, ${data.description}, ${data.importance}, ${data.difficulty}, ${data.time_level}, ${data.complexity}, ${status})
     RETURNING id
   `;
-  return rows[0].id;
+  
+  const newId = rows[0].id;
+
+  if (data.requirements && data.requirements.length > 0) {
+    for (const r of data.requirements) {
+      await sql`
+        INSERT INTO problem_requirements (problem_id, content, is_completed)
+        VALUES (${newId}, ${r.content}, ${r.is_completed})
+      `;
+    }
+  }
+
+  return newId;
 }
 
 export async function updateProblem(id: number, data: {
@@ -56,6 +80,7 @@ export async function updateProblem(id: number, data: {
   time_level: string;
   complexity: string;
   status: string;
+  requirements?: { content: string; is_completed: boolean }[];
 }) {
   const sql = getSql();
   await sql`
@@ -65,11 +90,31 @@ export async function updateProblem(id: number, data: {
         status = ${data.status}, updated_at = CURRENT_TIMESTAMP
     WHERE id = ${id} AND user_id = ${MOCK_USER_ID}
   `;
+
+  await sql`DELETE FROM problem_requirements WHERE problem_id = ${id}`;
+  
+  if (data.requirements && data.requirements.length > 0) {
+    for (const r of data.requirements) {
+      await sql`
+        INSERT INTO problem_requirements (problem_id, content, is_completed)
+        VALUES (${id}, ${r.content}, ${r.is_completed})
+      `;
+    }
+  }
 }
 
 export async function deleteProblem(id: number) {
   const sql = getSql();
-  await sql`
-    DELETE FROM problems WHERE id = ${id} AND user_id = ${MOCK_USER_ID}
-  `;
+  await sql`DELETE FROM problem_requirements WHERE problem_id = ${id}`;
+  await sql`DELETE FROM problems WHERE id = ${id} AND user_id = ${MOCK_USER_ID}`;
+}
+
+export async function toggleRequirement(reqId: number, isCompleted: boolean) {
+  const sql = getSql();
+  await sql`UPDATE problem_requirements SET is_completed = ${isCompleted} WHERE id = ${reqId}`;
+}
+
+export async function markProblemSolved(id: number) {
+  const sql = getSql();
+  await sql`UPDATE problems SET status = 'Resolvido' WHERE id = ${id} AND user_id = ${MOCK_USER_ID}`;
 }
