@@ -34,6 +34,7 @@ import {
   X,
   Settings,
   Plus,
+  ShieldCheck
 } from "lucide-react"
 import clsx from "clsx"
 import { twMerge } from "tailwind-merge"
@@ -172,12 +173,20 @@ function MobileLeftScreen({
 }) {
   return (
     <div className="relative flex h-full w-full flex-col overflow-y-auto bg-neutral-50 px-6 py-10 dark:bg-neutral-950">
-      <Link
-        href="/settings"
-        className="absolute top-10 right-6 z-20 rounded-full border border-neutral-200 bg-white p-2 shadow-sm transition-colors hover:bg-neutral-200 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800"
-      >
-        <Settings className="h-6 w-6 text-neutral-600 dark:text-neutral-400" />
-      </Link>
+      <div className="absolute top-10 right-6 z-20 flex space-x-2">
+        <Link
+          href="/solved"
+          className="rounded-full border border-neutral-200 bg-white p-2 shadow-sm transition-colors hover:bg-neutral-200 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800"
+        >
+          <ShieldCheck className="h-6 w-6 text-emerald-600 dark:text-emerald-500" />
+        </Link>
+        <Link
+          href="/settings"
+          className="rounded-full border border-neutral-200 bg-white p-2 shadow-sm transition-colors hover:bg-neutral-200 dark:border-neutral-800 dark:bg-neutral-900 dark:hover:bg-neutral-800"
+        >
+          <Settings className="h-6 w-6 text-neutral-600 dark:text-neutral-400" />
+        </Link>
+      </div>
 
       <div className="mb-8 flex items-center justify-between pr-12">
         <h1 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
@@ -795,12 +804,21 @@ export default function SchedulerHome() {
               <CalendarDays className="h-6 w-6" />
               <h1 className="text-xl font-bold tracking-tight">Agenda</h1>
             </div>
-            <Link
-              href="/settings"
-              className="rounded-full p-2 text-neutral-500 transition-colors hover:bg-neutral-200 hover:text-neutral-900 dark:hover:bg-neutral-800"
-            >
-              <Settings className="h-5 w-5" />
-            </Link>
+            <div className="flex space-x-1">
+              <Link
+                href="/solved"
+                title="Solved Problems"
+                className="rounded-full p-2 text-emerald-500 transition-colors hover:bg-neutral-200 hover:text-emerald-600 dark:hover:bg-neutral-800"
+              >
+                <ShieldCheck className="h-5 w-5" />
+              </Link>
+              <Link
+                href="/settings"
+                className="rounded-full p-2 text-neutral-500 transition-colors hover:bg-neutral-200 hover:text-neutral-900 dark:hover:bg-neutral-800"
+              >
+                <Settings className="h-5 w-5" />
+              </Link>
+            </div>
           </div>
 
           <Link
